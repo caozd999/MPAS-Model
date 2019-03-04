@@ -188,9 +188,9 @@ contains
 
       real (kind=RKIND), dimension(:,:), pointer :: velX, velY, velZ
       real (kind=RKIND), dimension(:), pointer :: posX, posY
-      real (kind=RKIND), dimension(:), pointer :: SFIx, SFIy
+      real (kind=RKIND), dimension(:), pointer :: sfiVAx, sfiVAy, sfiBx, sfiBy
       logical, pointer :: on_a_sphere, use_lat_lon_coords
-      integer, pointer :: nCells, nVertLevels
+      integer, pointer :: nCells, nVertLevels, nCellsSolve
       integer k, iCell, i
       err = 0
 
@@ -200,6 +200,7 @@ contains
       do while (associated(block))
          ! get dimensions
          call mpas_pool_get_dimension(block % dimensions, 'nCells', nCells)
+         call mpas_pool_get_dimension(block % dimensions, 'nCellsSolve', nCellsSolve)
          call mpas_pool_get_dimension(block % dimensions, 'nVertLevels', nVertLevels)
 
          ! get pointers to pools
@@ -227,14 +228,18 @@ contains
             call mpas_pool_get_array(diagnosticsPool, 'velocityY', velY)
          end if 
 
-         call mpas_pool_get_array(sedimentFluxIndexAMPool, 'SedimentFluxIndexX', SFIx)
-         call mpas_pool_get_array(sedimentFluxIndexAMPool, 'SedimentFluxIndexY', SFIy)
+         call mpas_pool_get_array(sedimentFluxIndexAMPool, 'sedimentFluxIndexVAX', sfiVAx)
+         call mpas_pool_get_array(sedimentFluxIndexAMPool, 'sedimentFluxIndexVAY', sfiVAy)
+         call mpas_pool_get_array(sedimentFluxIndexAMPool, 'sedimentFluxIndexBX', sfiBx)
+         call mpas_pool_get_array(sedimentFluxIndexAMPool, 'sedimentFluxIndexBY', sfiBy)
          ! Computations which are functions of nCells, nEdges, or nVertices
          ! must be placed within this block loop
          ! Here are some example loops
-         do iCell = 1,nCells
-            SFIx(iCell) = (sum(velX(:,iCell))/float(nVertLevels))**3.0_RKIND
-            SFIy(iCell) = (sum(velY(:,iCell))/float(nVertLevels))**3.0_RKIND
+         do iCell = 1,nCellsSolve
+            sfiVAx(iCell) = (sum(velX(:,iCell))/float(nVertLevels))**3.0_RKIND
+            sfiVAy(iCell) = (sum(velY(:,iCell))/float(nVertLevels))**3.0_RKIND
+            sfiBx(iCell) = velX(1,iCell)**3.0_RKIND
+            sfiBy(iCell) = velY(1,iCell)**3.0_RKIND
          end do
 
          block => block % next
