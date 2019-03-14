@@ -6,7 +6,9 @@
 		<option name="config_AM_sedimentTransport_compute_interval">'output_interval'</option>
 		<option name="config_AM_sedimentTransport_output_stream">'sedimentTransportOutput'</option>
 		<option name="config_AM_sedimentTransport_directory">'analysis_members'</option>
-		<option name="config_AM_sedimentTransport_grain_size">2.5e-4</option>
+		<option name="config_AM_sedimentTransport_grain_size">2.5e-3</option>
+		<option name="config_AM_sedimentTransport_ws_formula">'VanRijn1993'</option>
+		<option name="config_AM_sedimentTransport_bedld_formula">'Soulsby-Damgaard2005'</option>
 		<option name="config_AM_sedimentTransport_drag_coefficient">2.5e-3</option>
 		<option name="config_AM_sedimentTransport_grain_porosity">0.5</option>
 		<option name="config_AM_sedimentTransport_erate">5.0e-4</option>

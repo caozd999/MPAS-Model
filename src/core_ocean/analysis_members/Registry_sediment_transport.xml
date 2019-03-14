@@ -43,10 +43,24 @@
 		/>
 		<nml_option name="config_AM_sedimentTransport_grain_size"
 			type="real"
-			default_value="2.5e-4"
+			default_value="2.5e-3"
 			units="m"
 			description="dimaeter of a spherical sediment particle"
 			possible_values="1e-4 ~1e-3"
+		/>
+		<nml_option name="config_AM_sedimentTransport_ws_formula"
+			type="character"
+			default_value="VanRijn1993"
+			units="unitless"
+			description="options of different settling velocity formulae"
+			possible_values="VanRijn1993, Soulsby1997, Cheng1997, Goldstein-Coco2013"
+		/>
+		<nml_option name="config_AM_sedimentTransport_bedld_formula"
+			type="character"
+			default_value="Soulsby-Damgaard2005"
+			units="unitless"
+			description="options of diffrent sediment bedload transport formulae"
+			possible_values="Soulsby-Damgaard2005, Meyer-Peter-Mueller1948, Engelund-Hansen1967"
 		/>
 		<nml_option name="config_AM_sedimentTransport_drag_coefficient"
 			type="real"
