@@ -158,9 +158,9 @@ contains
       type (mpas_pool_type), pointer :: diagnosticsPool
 
       real (kind=RKIND), pointer :: salpha, SD50, rho0, rhoS, Vh, Dv,Ws
-      real (kind=RKIND), pointer :: tau_ce, Erate, poro, tau_cd, Cd
+      real (kind=RKIND), pointer :: tau_ce, Erate, poro, tau_cd, Cd, Manning
       real (kind=RKIND), dimension(:,:), pointer :: velX, velY, velZ
-      real (kind=RKIND), dimension(:), pointer :: posX, posY
+      real (kind=RKIND), dimension(:), pointer :: posX, posY, bottomDepth
       real (kind=RKIND), dimension(:), pointer :: sedFluxVAx, sedFluxVAy, sedFluxBx, sedFluxBy
       real (kind=RKIND), dimension(:), pointer :: ero_flux, dep_flux
       real (kind=RKIND), dimension(:), pointer :: bedld_x, bedld_y
@@ -190,6 +190,7 @@ contains
       call mpas_pool_get_config(ocnConfigs, 'config_AM_sedimentTransport_erate',Erate)
       call mpas_pool_get_config(ocnConfigs, 'config_AM_sedimentTransport_tau_ce',tau_ce)
       call mpas_pool_get_config(ocnConfigs, 'config_AM_sedimentTransport_tau_cd',tau_cd)
+      call mpas_pool_get_config(ocnConfigs, 'config_AM_sedimentTransport_Manning_coef',Manning)
       call mpas_pool_get_config(ocnConfigs, 'config_AM_sedimentTransport_water_density',rho0)
       call mpas_pool_get_config(ocnConfigs, 'config_AM_sedimentTransport_grain_density',rhoS)
       call mpas_pool_get_config(ocnConfigs, 'config_AM_sedimentTransport_kinematic_viscosity',Vh)
@@ -215,6 +216,7 @@ contains
          call mpas_pool_get_subpool(block % structs, 'diagnostics', diagnosticsPool)
          call mpas_pool_get_subpool(block % structs, 'sedimentTransportAM', sedimentTransportAMPool)
 
+         call mpas_pool_get_array(meshPool, 'bottomDepth', bottomDepth)
          call mpas_pool_get_config(meshPool, 'on_a_sphere', on_a_sphere)
          if (.not. on_a_sphere) then
             use_lat_lon_coords = .false.
@@ -351,8 +353,11 @@ contains
 
               elseif (bedld_formula == 'Engelund-Hansen') then
                 ! better provide a formula to calculate Chezy instead of assigning a constant value 
+                ! Chezy = 1/Manning * water_depth^(1/6)
+                ! In ocean water, Manning coeffcient varies between [0.012 0.025],see P.C. Kerr et al, 2013 JGR-Ocean
 !!                Chezy = Umag*sqrt(g/(tau_mean+eps))
-                Chezy = 65.0_RKIND
+!!                Chezy = 65.0_RKIND
+                Chezy = 1.0_RKIND/Manning*abs(bottomDepth(iCell))**(1.0_RKIND/6.0_RKIND)
                 Chezy = max(20.0_RKIND, Chezy)
                 Chezy = min(100.0_RKIND, Chezy)
                 cff4 = 0.05_RKIND*Umag**4.0_RKIND
