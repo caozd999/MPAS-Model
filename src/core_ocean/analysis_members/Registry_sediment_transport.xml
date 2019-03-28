@@ -43,7 +43,7 @@
 		/>
 		<nml_option name="config_AM_sedimentTransport_grain_size"
 			type="real"
-			default_value="2.5e-3"
+			default_value="2.5e-4"
 			units="m"
 			description="dimaeter of a spherical sediment particle"
 			possible_values="1e-4 ~1e-3"
@@ -57,10 +57,17 @@
 		/>
 		<nml_option name="config_AM_sedimentTransport_bedld_formula"
 			type="character"
-			default_value="Soulsby-Damgaard2005"
+			default_value="Soulsby-Damgaard"
 			units="unitless"
 			description="options of diffrent sediment bedload transport formulae"
-			possible_values="Soulsby-Damgaard2005, Meyer-Peter-Mueller1948, Engelund-Hansen1967"
+			possible_values="Soulsby-Damgaard, Meyer-Peter-Mueller, Engelund-Hansen"
+		/>
+		<nml_option name="config_AM_sedimentTransport_SSC_ref_formula"
+			type="character"
+			default_value="Lee2004"
+			units="unitless"
+			description="options of diffrent near-bottom suspended sediment concentration formulae"
+			possible_values="Lee2004, Goldstein2014,Zyserman-Fredsoe1994"
 		/>
 		<nml_option name="config_AM_sedimentTransport_drag_coefficient"
 			type="real"
@@ -185,18 +192,6 @@
        units="kg m^{-2}"
 			 description="bed sediment deposition flux"
 		/>
-		<var name="sedimentBedloadX"
-			 type="real"
-			 dimensions="nCells Time"
-       units="kg m^{-2}"
-			 description="bedload sediment trnasport flux"
-		/>
-		<var name="sedimentBedloadY"
-			 type="real"
-			 dimensions="nCells Time"
-       units="kg m^{-2}"
-			 description="bedload sediment transport flux"
-		/>
 		<var name="sedimentFluxVAX"
 			 type="real"
 			 dimensions="nCells Time"
@@ -221,6 +216,30 @@
        units="kg m^{-1} s^{-1}"
 			 description="Bottom sediment flux in Y-direction"
 		/>
+		<var name="sedimentBedloadX"
+			 type="real"
+			 dimensions="nCells Time"
+       units="kg m^{-1} s^{-1}"
+			 description="Sediment bedload transport rate in X-direction"
+		/>
+		<var name="sedimentBedloadY"
+			 type="real"
+			 dimensions="nCells Time"
+       units="kg m^{-1} s^{-1}"
+			 description="Sediment bedload transport rate in Y-direction"
+		/>
+		<var name="sedimentBottomReferenceConcentration"
+			 type="real"
+			 dimensions="nCells Time"
+       units="kg m^{-3}"
+			 description="near-bottom suspended sediment concentration (reference concentration)"
+		/>
+		<var name="sedimentConcentration"
+			 type="real"
+			 dimensions="nVertLevels nCells Time"
+       units="kg m^{-3}"
+			 description="suspended sediment concentration in water column"
+		/>
 	</var_struct>
 	<streams>
 		<stream name="sedimentTransportOutput"
@@ -242,5 +261,9 @@
 			<var name="sedimentFluxVAY"/>
 			<var name="sedimentFluxBX"/>
 			<var name="sedimentFluxBY"/>
+			<var name="sedimentBedloadX"/>
+			<var name="sedimentBedloadY"/>
+			<var name="sedimentBottomReferenceConcentration"/>
+			<var name="sedimentConcentration"/>
 		</stream>
 	</streams>

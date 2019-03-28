@@ -160,21 +160,25 @@ contains
       real (kind=RKIND), pointer :: salpha, SD50, rho0, rhoS, Vh, Dv,Ws
       real (kind=RKIND), pointer :: tau_ce, Erate, poro, tau_cd, Cd, Manning
       real (kind=RKIND), dimension(:,:), pointer :: velX, velY, velZ
-      real (kind=RKIND), dimension(:), pointer :: posX, posY, bottomDepth
+      real (kind=RKIND), dimension(:), pointer :: posX, posY, bottomDepth, ssh
       real (kind=RKIND), dimension(:), pointer :: sedFluxVAx, sedFluxVAy, sedFluxBx, sedFluxBy
       real (kind=RKIND), dimension(:), pointer :: ero_flux, dep_flux
       real (kind=RKIND), dimension(:), pointer :: bedld_x, bedld_y
+      real (kind=RKIND), dimension(:), pointer :: SSC_ref
+      real (kind=RKIND), dimension(:,:), pointer :: SSC
+      real (kind=RKIND), dimension(:,:), pointer :: zMid
 
       logical, pointer :: on_a_sphere, use_lat_lon_coords
       logical, pointer :: bedload, suspended
       integer, pointer :: nCells, nVertLevels, nCellsSolve
       character (len=StrKIND), pointer :: ws_formula, bedld_formula
+      character (len=StrKIND), pointer :: SSC_ref_formula
 
       integer k, iCell, i
-      real ratio1, rho_R, ND50, Umag, dstar,Chezy
+      real ratio1, rho_R, ND50, Umag, Umagb, dstar, Chezy, Usf, RouseN
       real cff1, cff2, cff3, cff4, cff5
       real phicw, w_asym   !! parameters related to waves, assigned ZEROs for just now
-      real tau_tide, tau_wave, tau_mean, theta_mean, theta_wave, theta_ce
+      real tau_tide, tau_wave, tau_mean, theta_mean, theta_wave, theta_ce,theta_sf,za
       real velXb, velYb, velXm, velYm
       real phi_x1, phi_x2, phi_x, phi_y
       real, parameter :: g = 9.81_RKIND
@@ -201,6 +205,7 @@ contains
       call mpas_pool_get_config(ocnConfigs, 'config_AM_sedimentTransport_suspended', suspended)
       call mpas_pool_get_config(ocnConfigs, 'config_AM_sedimentTransport_ws_formula', ws_formula)
       call mpas_pool_get_config(ocnConfigs, 'config_AM_sedimentTransport_bedld_formula', bedld_formula)
+      call mpas_pool_get_config(ocnConfigs, 'config_AM_sedimentTransport_SSC_ref_formula', SSC_ref_formula)
 
 
       block => domain % blocklist
@@ -216,6 +221,8 @@ contains
          call mpas_pool_get_subpool(block % structs, 'diagnostics', diagnosticsPool)
          call mpas_pool_get_subpool(block % structs, 'sedimentTransportAM', sedimentTransportAMPool)
 
+         call mpas_pool_get_array(diagnosticsPool, 'zMid', zMid)
+         call mpas_pool_get_array(statePool, 'ssh', ssh)
          call mpas_pool_get_array(meshPool, 'bottomDepth', bottomDepth)
          call mpas_pool_get_config(meshPool, 'on_a_sphere', on_a_sphere)
          if (.not. on_a_sphere) then
@@ -234,6 +241,7 @@ contains
             call mpas_pool_get_array(diagnosticsPool, 'velocityY', velY)
          end if 
 
+
          call mpas_pool_get_array(sedimentTransportAMPool, 'sedimentFallVelocity', Ws)
          call mpas_pool_get_array(sedimentTransportAMPool, 'sedimentErosionFlux', ero_flux)
          call mpas_pool_get_array(sedimentTransportAMPool, 'sedimentDepositionFlux', dep_flux)
@@ -243,8 +251,10 @@ contains
          call mpas_pool_get_array(sedimentTransportAMPool, 'sedimentFluxBY', sedFluxBy)
          call mpas_pool_get_array(sedimentTransportAMPool, 'sedimentBedloadX', bedld_x)
          call mpas_pool_get_array(sedimentTransportAMPool, 'sedimentBedloadY', bedld_y)
+         call mpas_pool_get_array(sedimentTransportAMPool, 'sedimentBottomReferenceConcentration', SSC_ref)
+         call mpas_pool_get_array(sedimentTransportAMPool, 'sedimentConcentration', SSC)
 
-     ! compute sedimentFallVelocity
+!======> COMPUTE SedimentFallVelocity [m] 
          ! sieve diameter (SD50) to nominal diameter (ND50), Raudkivi [1990]
          ND50 = SD50*1.1_RKIND
          ! sediment/water density comparsion  -> specific graivity
@@ -272,7 +282,9 @@ contains
            print*, 'Model will stop ...'
            exit
          end if
+!<======
 
+!======> COMPUTE SedimentTransportFlux [kg/m/s]   
         ! compute ratio1 in sedFlux = ratio1*U^3, Grawe et al. [2014]
         ratio1 = salpha*Dv/Ws**2
 
@@ -287,8 +299,8 @@ contains
             sedFluxBx(iCell) = ratio1*velXb**3.0_RKIND
             sedFluxBy(iCell) = ratio1*velYb**3.0_RKIND
         end do
- 
-    ! compute bedload and suspended transport
+!<======
+
         cff1 = rho_R*g*SD50
         cff2 = sqrt(rho_R*g*SD50)*SD50*rhoS
         !wave-related parameters
@@ -296,27 +308,71 @@ contains
         phicw = 0.0_RKIND
 
         do iCell = 1,nCellsSolve
+            velXm = sum(velX(:,iCell))/float(nVertLevels)
+            velYm = sum(velY(:,iCell))/float(nVertLevels)
             velXb = velX(size(velX,1),iCell)
             velYb = velY(size(velY,1),iCell)
-!!            Umag = sqrt(velX(size(velX,1),iCell)**2 + velY(size(velY,1),iCell)**2)
-            Umag = sqrt(velXb**2.0_RKIND + velYb**2.0_RKIND)
-            tau_tide = rho0*Cd*Umag**2.0_RKIND
+            Umag = sqrt(velXm**2.0_RKIND + velYm**2.0_RKIND)
+            Umagb = sqrt(velXb**2.0_RKIND + velYb**2.0_RKIND)
+
+            ! compute bottom friction Cd = [von_Karmann/(1+log(z0/h))]^2, von_karmann=0.4, z0=SD50/12, h=bottomDepth+ssh
+            cff3 = SD50/12.0_RKIND
+            cff4 = 1+log(cff3/(eps+ssh(iCell)+bottomDepth(iCell)))
+            Cd = (0.4_RKIND/cff4)**2.0_RKIND
+
+            ! compute shear velocity, tau= rho0*Cd*Umag**2 = rho0*Usf**2 => Usf=sqrt(Cd)*Umag
+            Usf = Umag * sqrt(Cd)
+
+            ! compute Rouse number, RouseN=Ws/(von_karmann*Usf)
+            RouseN = Ws/(0.4_RKIND*(Usf+eps))
+
+            ! compute shear stress
+            tau_tide = rho0*Cd*Umagb**2.0_RKIND
             tau_wave = 0.0_RKIND
             tau_mean = tau_tide*(1.0_RKIND+1.2_RKIND*(tau_wave/(tau_wave+tau_tide+eps))**1.5_RKIND)
 
-        ! compute suspended transport <--- to be continued
+!======> COMPUTE Suspended Transport [] <--- to be continued
             if (suspended) then
               ! surface erosion mass flux ero_flux in unit (kg m-2 s-1) 
               ero_flux(iCell) = (1.0_RKIND-poro)*Erate*MAX(tau_mean/tau_ce -1.0_RKIND, 0.0_RKIND)
-              ! if (tau_mean .gt. tau_ce ) then
-              !   ero_flux(iCell) = (1.0_RKIND-poro)*Erate*(tau_mean/tau_ce -1.0_RKIND)
-              !   ero_flux(iCell) = (1.0_RKIND-poro)*Erate*(tau_mean/tau_ce -1.0_RKIND)
-              ! else
-              !   ero_flux(iCell) = 0.0_RKIND
-              ! endif
             end if
+!<======
 
-        ! compute bedload transport, using formulae by Soulsby and Damgaard [2005]
+!======> COMPUTE SSC_ref: near-bottom suspended sediment concentration (reference concentration) [kg/m3]
+            ! Two equations:
+            ! 1) Lee2004,JGR; 2) Goldstein2014,Earth Surface Dynamics
+            if (SSC_ref_formula == 'Lee2004') then
+              theta_sf = Usf**2.0_RKIND/cff1
+              SSC_ref(iCell) = 2.58_RKIND*(theta_sf*Usf/Ws)**1.45_RKIND
+            elseif (SSC_ref_formula == 'Goldstein2014') then
+              SSC_ref(iCell) = (0.328_RKIND*Umagb/(0.0688_RKIND+1E3*SD50))**2_RKIND
+            elseif (SSC_ref_formula == 'Zyserman-Fredsoe1994') then
+              theta_sf = tau_mean/(cff1*rho0)
+              cff3 = 0.331_RKIND*(theta_sf-0.045_RKIND)**1.75_RKIND
+              cff4 = 1.0_RKIND+0.72_RKIND*(theta_sf-0.045_RKIND)**1.75_RKIND
+              SSC_ref(iCell) = cff3/cff4
+            else
+                print*, 'Please pick one SSC_ref_formula from the following two:'
+                print*, 'Lee2004, Goldstein2014,Zyserman-Fredsoe1994'
+                print*, 'Model will stop ...'
+                exit
+            endif
+print*,'bottomDepth(iCell)',bottomDepth(iCell)
+print*,'ssh(iCell)',ssh(iCell)
+print*,'zMid(nVertLevels,iCell)',zMid(nVertLevels,iCell)
+        ! compute SSC based on the Rouse Profile
+        ! SSC(z) = SSC_ref*[z/za * (h-za)/(h-z)]**(-b), where b is the Rouse number (or suspension parameter)
+        ! b = Ws/(von_karmann*usf); za is reference height (0.01m), h is bottomDepth, z=-zMid(k,iCell)
+           za = 0.01_RKIND
+           if (SSC_ref_formula == 'Zyserman-Fredsoe1994') za=2.0_RKIND*SD50
+           do k=1,nVertLevels
+              cff3 = (ssh(iCell)+bottomDepth(iCell)-za)/(ssh(iCell)+bottomDepth(iCell)+zMid(k,iCell)+eps)
+              cff4 = (-zMid(k,iCell)/za*cff3)**(-1.0_RKIND*RouseN)
+              SSC(k,iCell) = SSC_ref(iCell)*cff4
+            enddo !! k loop
+!<======          
+
+!======> COMPUTE Bedload Transport [kg/m/s], using one of the three formulae define in bedld_formula
             if (bedload) then
                theta_mean = tau_mean/cff1
                theta_wave = tau_wave/cff1
@@ -353,14 +409,14 @@ contains
 
               elseif (bedld_formula == 'Engelund-Hansen') then
                 ! better provide a formula to calculate Chezy instead of assigning a constant value 
-                ! Chezy = 1/Manning * water_depth^(1/6)
+                ! Chezy = 1/Manning * water_depth^(1/6) with unit [m^0.5 s^(-1)]
                 ! In ocean water, Manning coeffcient varies between [0.012 0.025],see P.C. Kerr et al, 2013 JGR-Ocean
 !!                Chezy = Umag*sqrt(g/(tau_mean+eps))
 !!                Chezy = 65.0_RKIND
-                Chezy = 1.0_RKIND/Manning*abs(bottomDepth(iCell))**(1.0_RKIND/6.0_RKIND)
+                Chezy = 1.0_RKIND/Manning*abs(ssh(iCell)+bottomDepth(iCell))**(1.0_RKIND/6.0_RKIND)
                 Chezy = max(20.0_RKIND, Chezy)
                 Chezy = min(100.0_RKIND, Chezy)
-                cff4 = 0.05_RKIND*Umag**4.0_RKIND
+                cff4 = 0.05_RKIND*Umag**4.0_RKIND*rhoS
                 cff5 = sqrt(g)*Chezy**3.0_RKIND*rho_R**2.0_RKIND*SD50
                 bedld_x(iCell) = cff4/cff5*velXb
                 bedld_y(iCell) = cff4/cff5*velYb
@@ -371,10 +427,11 @@ contains
                 exit
               end if
             end if
-        end do
+
+        end do !! iCell loop
 
          block => block % next
-      end do
+      end do !! do while (associated(block)) loop
 
    end subroutine ocn_compute_sediment_transport!}}}
 
