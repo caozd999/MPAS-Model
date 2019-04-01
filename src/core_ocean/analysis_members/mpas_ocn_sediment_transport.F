@@ -254,7 +254,7 @@ contains
          call mpas_pool_get_array(sedimentTransportAMPool, 'sedimentBottomReferenceConcentration', SSC_ref)
          call mpas_pool_get_array(sedimentTransportAMPool, 'sedimentConcentration', SSC)
 
-!======> COMPUTE SedimentFallVelocity [m] 
+!======> COMPUTE SedimentFallVelocity [m/s] 
          ! sieve diameter (SD50) to nominal diameter (ND50), Raudkivi [1990]
          ND50 = SD50*1.1_RKIND
          ! sediment/water density comparsion  -> specific graivity
@@ -301,7 +301,7 @@ contains
         end do
 !<======
 
-        cff1 = rho_R*g*SD50
+        cff1 = rho_R*g*SD50+eps
         cff2 = sqrt(rho_R*g*SD50)*SD50*rhoS
         !wave-related parameters
         w_asym = 0.0_RKIND
@@ -326,8 +326,8 @@ contains
             ! compute Rouse number, RouseN=Ws/(von_karmann*Usf)
             RouseN = Ws/(0.4_RKIND*(Usf+eps))
 
-            ! compute shear stress
-            tau_tide = rho0*Cd*Umagb**2.0_RKIND
+            ! compute shear stress [m^2 s^{-2}]
+            tau_tide = Cd*Umagb**2.0_RKIND
             tau_wave = 0.0_RKIND
             tau_mean = tau_tide*(1.0_RKIND+1.2_RKIND*(tau_wave/(tau_wave+tau_tide+eps))**1.5_RKIND)
 
@@ -339,41 +339,40 @@ contains
 !<======
 
 !======> COMPUTE SSC_ref: near-bottom suspended sediment concentration (reference concentration) [kg/m3]
-            ! Two equations:
-            ! 1) Lee2004,JGR; 2) Goldstein2014,Earth Surface Dynamics
+            ! Three equations:
+            ! 1) Lee2004,JGR; 2) Goldstein2014,Earth Surface Dynamics; 3) Zyserman-Fredsoe1994, J. Hydraul. Eng.
             if (SSC_ref_formula == 'Lee2004') then
               theta_sf = Usf**2.0_RKIND/cff1
               SSC_ref(iCell) = 2.58_RKIND*(theta_sf*Usf/Ws)**1.45_RKIND
             elseif (SSC_ref_formula == 'Goldstein2014') then
               SSC_ref(iCell) = (0.328_RKIND*Umagb/(0.0688_RKIND+1E3*SD50))**2_RKIND
             elseif (SSC_ref_formula == 'Zyserman-Fredsoe1994') then
-              theta_sf = tau_mean/(cff1*rho0)
+              theta_sf = tau_mean/cff1
               cff3 = 0.331_RKIND*(theta_sf-0.045_RKIND)**1.75_RKIND
               cff4 = 1.0_RKIND+0.72_RKIND*(theta_sf-0.045_RKIND)**1.75_RKIND
               SSC_ref(iCell) = cff3/cff4
             else
-                print*, 'Please pick one SSC_ref_formula from the following two:'
+                print*, 'Please pick one SSC_ref_formula from the following three:'
                 print*, 'Lee2004, Goldstein2014,Zyserman-Fredsoe1994'
                 print*, 'Model will stop ...'
                 exit
             endif
-print*,'bottomDepth(iCell)',bottomDepth(iCell)
-print*,'ssh(iCell)',ssh(iCell)
-print*,'zMid(nVertLevels,iCell)',zMid(nVertLevels,iCell)
-        ! compute SSC based on the Rouse Profile
+!<======
+
+!======> Compute SSC based on the Rouse Profile
         ! SSC(z) = SSC_ref*[z/za * (h-za)/(h-z)]**(-b), where b is the Rouse number (or suspension parameter)
         ! b = Ws/(von_karmann*usf); za is reference height (0.01m), h is bottomDepth, z=-zMid(k,iCell)
            za = 0.01_RKIND
            if (SSC_ref_formula == 'Zyserman-Fredsoe1994') za=2.0_RKIND*SD50
            do k=1,nVertLevels
               cff3 = (ssh(iCell)+bottomDepth(iCell)-za)/(ssh(iCell)+bottomDepth(iCell)+zMid(k,iCell)+eps)
-              cff4 = (-zMid(k,iCell)/za*cff3)**(-1.0_RKIND*RouseN)
+              cff4 = (-zMid(k,iCell)/za*cff3)**(-RouseN)
               SSC(k,iCell) = SSC_ref(iCell)*cff4
-            enddo !! k loop
+           enddo !! k loop
 !<======          
 
 !======> COMPUTE Bedload Transport [kg/m/s], using one of the three formulae define in bedld_formula
-            if (bedload) then
+           if (bedload) then
                theta_mean = tau_mean/cff1
                theta_wave = tau_wave/cff1
                theta_ce = tau_ce/cff1
