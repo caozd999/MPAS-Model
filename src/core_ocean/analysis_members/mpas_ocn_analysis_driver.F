@@ -48,7 +48,7 @@ module ocn_analysis_driver
    use ocn_transect_transport
    use ocn_eddy_product_variables
    use ocn_moc_streamfunction
-   use ocn_sediment_flux_index
+!   use ocn_sediment_flux_index
    use ocn_sediment_transport
 !   use ocn_TEM_PLATE
 
@@ -1128,8 +1128,8 @@ contains
         call ocn_init_eddy_product_variables(domain, err_tmp)
       else if ( analysisMemberName(1:nameLength) == 'mocStreamfunction' ) then
          call ocn_init_moc_streamfunction(domain, err_tmp)
-      else if ( analysisMemberName(1:nameLength) == 'sedimentFluxIndex' ) then
-         call ocn_init_sediment_flux_index(domain, err_tmp)
+!      else if ( analysisMemberName(1:nameLength) == 'sedimentFluxIndex' ) then
+!         call ocn_init_sediment_flux_index(domain, err_tmp)
       else if ( analysisMemberName(1:nameLength) == 'sedimentTransport' ) then
          call ocn_init_sediment_transport(domain, err_tmp)
 !     else if ( analysisMemberName(1:nameLength) == 'temPlate' ) then
@@ -1224,8 +1224,8 @@ contains
         call ocn_compute_eddy_product_variables(domain, timeLevel, err_tmp)
       else if ( analysisMemberName(1:nameLength) == 'mocStreamfunction' ) then
          call ocn_compute_moc_streamfunction(domain, timeLevel, err_tmp)
-      else if ( analysisMemberName(1:nameLength) == 'sedimentFluxIndex' ) then
-         call ocn_compute_sediment_flux_index(domain, timeLevel, err_tmp)
+!      else if ( analysisMemberName(1:nameLength) == 'sedimentFluxIndex' ) then
+!         call ocn_compute_sediment_flux_index(domain, timeLevel, err_tmp)
       else if ( analysisMemberName(1:nameLength) == 'sedimentTransport' ) then
          call ocn_compute_sediment_transport(domain, timeLevel, err_tmp)
 !     else if ( analysisMemberName(1:nameLength) == 'temPlate' ) then
@@ -1325,8 +1325,8 @@ contains
         call ocn_restart_eddy_product_variables(domain, err_tmp)
       else if ( analysisMemberName(1:nameLength) == 'mocStreamfunction' ) then
          call ocn_restart_moc_streamfunction(domain, err_tmp)
-      else if ( analysisMemberName(1:nameLength) == 'sedimentFluxIndex' ) then
-         call ocn_restart_sediment_flux_index(domain, err_tmp)
+!      else if ( analysisMemberName(1:nameLength) == 'sedimentFluxIndex' ) then
+!         call ocn_restart_sediment_flux_index(domain, err_tmp)
       else if ( analysisMemberName(1:nameLength) == 'sedimentTransport' ) then
          call ocn_restart_sediment_transport(domain, err_tmp)
 !     else if ( analysisMemberName(1:nameLength) == 'temPlate' ) then
@@ -1420,8 +1420,8 @@ contains
         call ocn_finalize_eddy_product_variables(domain, err_tmp)
       else if ( analysisMemberName(1:nameLength) == 'mocStreamfunction' ) then
          call ocn_finalize_moc_streamfunction(domain, err_tmp)
-      else if ( analysisMemberName(1:nameLength) == 'sedimentFluxIndex' ) then
-         call ocn_finalize_sediment_flux_index(domain, err_tmp)
+!      else if ( analysisMemberName(1:nameLength) == 'sedimentFluxIndex' ) then
+!         call ocn_finalize_sediment_flux_index(domain, err_tmp)
       else if ( analysisMemberName(1:nameLength) == 'sedimentTransport' ) then
          call ocn_finalize_sediment_transport(domain, err_tmp)
 !     else if ( analysisMemberName(1:nameLength) == 'temPlate' ) then
