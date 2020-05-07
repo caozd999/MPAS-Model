@@ -1,0 +1,11 @@
+loading modules git, anaconda, intel, openmpi, netcdf, pnetcdf, pio for grizzly
+done
+ * Running init_step1
+     Complete
+ * Running forward1
+     Complete
+ * Running init_step2
+     Complete
+ * Running forward2
+     Complete
+ * Running analysis

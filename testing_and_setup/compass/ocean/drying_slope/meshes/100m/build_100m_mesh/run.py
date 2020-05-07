@@ -12,8 +12,8 @@ import subprocess
 dev_null = open('/dev/null', 'w')
 
 # Run command is:
-# planar_hex --nx 10 --ny 290 --dc 100.0 --npy -o grid.nc
-subprocess.check_call(['planar_hex', '--nx', '10', '--ny', '290', '--dc',
+# planar_hex --nx 6 --ny 290 --dc 100.0 --npy -o grid.nc
+subprocess.check_call(['planar_hex', '--nx', '6', '--ny', '290', '--dc',
                        '100.0', '--npy', '-o', 'grid.nc'])
 
 # Run command is:

@@ -38,7 +38,7 @@ def setup_subplot(fileno):
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
 
-    x = np.linspace(0,25,114)
+    x = np.linspace(0,25,290)
     if (fileno=='1'):
       y = bot1
     else:
@@ -84,7 +84,7 @@ def plot_datasets(rval, times, fileno, plotdata=True):
 
 
 def place_time_labels(times):
-    locs = [9.3, 7.2, 4.2, 2.2, 1.2, 0.2]
+    locs = [9.5, 7.2, 4.2, 2.2, 1.0, 0.15]
     for atime, ay in zip(times, locs):
         plt.text(25.2, ay, atime + ' days', size=8)
 

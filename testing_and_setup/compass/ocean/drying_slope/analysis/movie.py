@@ -20,12 +20,19 @@ from subprocess import call
 # render statically by default
 plt.switch_backend('agg')
 
+ds1 = xr.open_dataset('output1.nc')
+bath = ds1.bottomDepth.values.reshape((114,6))
+bot1 = bath[:,1]
+ds2 = xr.open_dataset('output2.nc')
+bath = ds2.bottomDepth.values.reshape((114,6))
+bot2 = bath[:,1]
+
 def setup_fig():
     fig, ax = plt.subplots(nrows=2,ncols=1, sharex=True, sharey=True)
-    fig.text(0.04, 0.5, 'Channel depth (m)', va='center', rotation='vertical')
-    fig.text(0.5, 0.02, 'Along channel distance (km)', ha='center')
+    fig.text(0.04, 0.5, 'Shelf depth (m)', va='center', rotation='vertical')
+    fig.text(0.5, 0.02, 'Along shelf distance (km)', ha='center')
 
-def setup_subplot():
+def setup_subplot(fileno):
     plt.xlim(0,25)
     plt.ylim(-1, 11)
     ax = plt.gca()
@@ -33,20 +40,23 @@ def setup_subplot():
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
 
-    x = np.linspace(0,25,100)
-    y = 10.0/25.0*x
+    x = np.linspace(0,25,114)
+    if (fileno=='1'):
+      y = bot1
+    else:
+      y = bot2
     plt.plot(x, y, 'k-', lw=3)
 
 
 def upper_plot():
     plt.subplot(2,1,1)
     plt.gca().set_xticklabels([])
-    setup_subplot()
+    setup_subplot('1')
 
 
 def lower_plot():
     plt.subplot(2,1,2)
-    setup_subplot()
+    setup_subplot('2')
 
 
 def plot_data(rval='0.0025', dtime='0.05', datatype='analytical', *args, **kwargs):
@@ -57,16 +67,16 @@ def plot_data(rval='0.0025', dtime='0.05', datatype='analytical', *args, **kwarg
 
 def plot_datasets(rval, times, fileno, plotdata=True, frame=False):
     for ii, dtime in enumerate(times):
-        if plotdata:
-            plot_data(rval=rval, dtime = dtime, datatype = 'analytical',
-                      marker = '.', color = 'b', label='analytical')
-            plot_data(rval=rval, dtime = dtime, datatype = 'roms',
-                      marker = '.', color = 'g', label='ROMS')
+#        if plotdata:
+#          plot_data(rval=rval, dtime = dtime, datatype = 'analytical',
+#                      marker = '.', color = 'b', label='analytical')
+#          plot_data(rval=rval, dtime = dtime, datatype = 'roms',
+#                      marker = '.', color = 'g', label='ROMS')
         if frame:
             timeslice = times[frame]
             plot_MPASO(timeslice, fileno, 'k-', lw=2, label='MPAS-O')
         else:
-            plot_MPASO([dtime], fileno, 'k-', lw=0.5, label='MPAS-O')
+          plot_MPASO([dtime], fileno, 'k-', lw=0.5, label='MPAS-O')
 
         if plotdata:
             if ii == 0:
@@ -84,10 +94,10 @@ def plot_MPASO(times, fileno, *args, **kwargs):
     for atime in times:
         # factor of 1e-16 needed to account for annoying round-off issue to get right time slices
         plottime = int((float(atime)/0.2 + 1e-16)*24.0)
-        ds = xr.open_mfdataset('output'+ fileno + '.nc')
+        ds = xr.open_dataset('output'+ fileno + '.nc')
         timestr = ds.isel(Time=plottime).xtime.values
-        #print('{} {} {}'.format(atime, plottime, timestr))
-        ds = ds.drop(np.setdiff1d([i for i in ds.variables], ['yCell','ssh']))
+#        print('{} {} {}'.format(atime, plottime, timestr))
+        ds = ds.drop_vars(np.setdiff1d([i for i in ds.variables], ['yCell','ssh']))
         ymean = ds.isel(Time=plottime).groupby('yCell').mean(dim=xr.ALL_DIMS)
         x = ymean.yCell.values/1000.0
         y = ymean.ssh.values
@@ -100,7 +110,7 @@ def plot_MPASO(times, fileno, *args, **kwargs):
 def plot_tidal_forcing_comparison():
     # data from MPAS-O on boundary
     for fileno in ['1','2']:
-        ds = xr.open_mfdataset('output' + fileno +'.nc')
+        ds = xr.open_dataset('output' + fileno +'.nc')
         ympas = ds.ssh.where(ds.tidalInputMask).mean('nCells').values
         x = np.linspace(0, 1.0, len(ds.xtime))*12.0
         plt.plot(x, ympas, marker='o', label='MPAS-O forward' + fileno)
@@ -140,9 +150,9 @@ def main():
 
     ################ plot drying front comparison ###############
     setup_fig()
-    times = ['0.50', '0.05', '0.40', '0.15', '0.30', '0.25']
+    times = ['0.50', '0.05', '0.40', '0.15', '0.30', '0.25'] 
 
-    # subplot r = 0.0025
+# subplot r = 0.0025
     upper_plot()
     plot_datasets(rval='0.0025', times=times, fileno='1')
 
@@ -150,7 +160,7 @@ def main():
     lower_plot()
     plot_datasets(rval='0.01', times=times, fileno='2')
 
-    plt.suptitle('Drying slope comparison between MPAS-O, analytical, and ROMS')
+    plt.suptitle('Drying slope comparison')
     for outtype in ['.png','.pdf']:
         plt.savefig('dryingslopecomparison' + outtype)
 

@@ -11,7 +11,7 @@
 		<option name="config_use_implicit_bottom_drag">.false.</option>
 		<option name="config_use_implicit_bottom_drag_variable">.true.</option>
 		<option name="config_idealized_profile">.true.</option>
-		<option name="config_dt">'0000_00:00:10'</option>
+		<option name="config_dt">'0000_00:00:05'</option>
 		<option name="config_tidal_forcing_monochromatic_amp">10.0</option>
 		<option name="config_tidal_forcing_monochromatic_period">1.0</option>
 		<option name="config_tidal_forcing_monochromatic_phaseLag">0.0</option>
@@ -24,8 +24,8 @@
 
 	<run_script name="run.py">
 		<step executable="gpmetis">
-			<argument flag="graph.info">4</argument>
+			<argument flag="graph.info">32</argument>
 		</step>
-		<model_run procs="4" threads="1" namelist="namelist.ocean" streams="streams.ocean"/>
+		<model_run procs="32" threads="1" namelist="namelist.ocean" streams="streams.ocean"/>
 	</run_script>
 </config>

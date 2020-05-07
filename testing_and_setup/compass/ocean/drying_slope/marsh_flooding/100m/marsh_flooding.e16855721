@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "./comparison.py", line 22, in <module>
+    bath = ds1.bottomDepth.values.reshape((286,6))
+ValueError: cannot reshape array of size 1740 into shape (286,6)
+Traceback (most recent call last):
+  File "./run.py", line 16, in <module>
+    subprocess.check_call(['./comparison.py'])
+  File "/usr/projects/climate/SHARED_CLIMATE/anaconda_envs/base/envs/compass_0.1.2/lib/python3.7/subprocess.py", line 363, in check_call
+    raise CalledProcessError(retcode, cmd)
+subprocess.CalledProcessError: Command '['./comparison.py']' returned non-zero exit status 1.
+Traceback (most recent call last):
+  File "run_test.py", line 113, in <module>
+    subprocess.check_call(['./run.py'], stdout=dev_null, stderr=None)
+  File "/usr/projects/climate/SHARED_CLIMATE/anaconda_envs/base/envs/compass_0.1.2/lib/python3.7/subprocess.py", line 363, in check_call
+    raise CalledProcessError(retcode, cmd)
+subprocess.CalledProcessError: Command '['./run.py']' returned non-zero exit status 1.

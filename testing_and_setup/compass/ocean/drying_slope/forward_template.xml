@@ -20,7 +20,7 @@
 		<option name="config_zero_drying_velocity">.true.</option>
 		<option name="config_thickness_flux_type">'upwind'</option>
 		<option name="config_time_integrator">'RK4'</option>
-		<option name="config_run_duration">'0000_12:00:01'</option>
+		<option name="config_run_duration">'0002_00:00:01'</option>
 		<option name="config_use_mom_del2">.false.</option>
 		<option name="config_use_const_visc">.true.</option>
 		<option name="config_vert_visc">1e4</option>
