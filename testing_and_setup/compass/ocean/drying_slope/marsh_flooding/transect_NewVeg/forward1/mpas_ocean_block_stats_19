@@ -1,0 +1,39 @@
+ ERROR: NaN Detected in state see below for which field contained a NaN.
+   -- Statistics information for block fields
+     Field: latCell
+         Min:   0.000000000000000E+000
+         Max:   0.000000000000000E+000
+     Field: lonCell
+         Min:   0.000000000000000E+000
+         Max:   0.000000000000000E+000
+     Field: xCell
+         Min:    40.0000000000000     
+         Max:    320.000000000000     
+     Field: yCell
+         Min:    138.564064605510     
+         Max:    484.974226119286     
+     Field: zCell
+         Min:   0.000000000000000E+000
+         Max:   0.000000000000000E+000
+     Field: areaCell
+         Min:    5542.56258422041     
+         Max:    5542.56258422041     
+ 
+ 
+ ERROR: NaN Detected in normalVelocity.
+   -- Statistics information for normalVelocity fields
+     Field: seaIcePressure
+         Min:   0.000000000000000E+000
+         Max:   0.000000000000000E+000
+     Field: atmosphericPressure
+         Min:   0.000000000000000E+000
+         Max:   0.000000000000000E+000
+     Field: surfaceStressMagnitude
+         Min:   0.000000000000000E+000
+         Max:   0.000000000000000E+000
+     Field: surfaceStress
+         Min:   0.000000000000000E+000
+         Max:   0.000000000000000E+000
+     Field: angleEdge
+         Min:   0.000000000000000E+000
+         Max:    3.14159265358979     

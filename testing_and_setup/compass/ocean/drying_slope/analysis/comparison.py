@@ -19,33 +19,43 @@ import pandas as pd
 # render statically by default
 plt.switch_backend('agg')
 
+ds1 = xr.open_dataset('output1.nc')
+bath = ds1.bottomDepth.values.reshape((114,6))
+bot1 = bath[:,1]
+ds2 = xr.open_dataset('output2.nc')
+bath = ds2.bottomDepth.values.reshape((114,6))
+bot2 = bath[:,1]
+
 def setup_fig():
     fig, ax = plt.subplots(nrows=2,ncols=1, sharex=True, sharey=True)
     fig.text(0.04, 0.5, 'Channel depth (m)', va='center', rotation='vertical')
     fig.text(0.5, 0.02, 'Along channel distance (km)', ha='center')
 
-def setup_subplot():
+def setup_subplot(fileno):
     plt.xlim(0,25)
-    plt.ylim(-1, 11)
+    plt.ylim(-1, 21)
     ax = plt.gca()
     ax.invert_yaxis()
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
 
-    x = np.linspace(0,25,100)
-    y = 10.0/25.0*x
+    x = np.linspace(0,25,114)
+    if (fileno=='1'):
+      y = bot1
+    else:
+      y = bot2
     plt.plot(x, y, 'k-', lw=3)
 
 
 def upper_plot():
     plt.subplot(2,1,1)
     plt.gca().set_xticklabels([])
-    setup_subplot()
+    setup_subplot('1')
 
 
 def lower_plot():
     plt.subplot(2,1,2)
-    setup_subplot()
+    setup_subplot('2')
 
 
 def plot_data(rval='0.0025', dtime='0.05', datatype='analytical', *args, **kwargs):
@@ -56,18 +66,18 @@ def plot_data(rval='0.0025', dtime='0.05', datatype='analytical', *args, **kwarg
 
 def plot_datasets(rval, times, fileno, plotdata=True):
     for ii, dtime in enumerate(times):
-        if plotdata:
-            plot_data(rval=rval, dtime = dtime, datatype = 'analytical',
-                      marker = '.', color = 'b', label='analytical')
-            plot_data(rval=rval, dtime = dtime, datatype = 'roms',
-                      marker = '.', color = 'g', label='ROMS')
+   #     if plotdata:
+   #         plot_data(rval=rval, dtime = dtime, datatype = 'analytical',
+   #                   marker = '.', color = 'b', label='analytical')
+   #         plot_data(rval=rval, dtime = dtime, datatype = 'roms',
+   #                   marker = '.', color = 'g', label='ROMS')
         plot_MPASO([dtime], fileno, 'k-', lw=0.5, label='MPAS-O')
 
         if plotdata:
             if ii == 0:
                 plt.legend(frameon=False, loc='lower left')
                 place_time_labels(times)
-                plt.text(0.5, 5, 'r = ' + str(rval))
+#                plt.text(0.5, 5, 'r = ' + str(rval))
 
 
 def place_time_labels(times):

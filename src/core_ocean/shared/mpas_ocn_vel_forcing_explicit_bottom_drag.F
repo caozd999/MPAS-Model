@@ -142,8 +142,9 @@ contains
         ! momentum mixing, and is explicit if both |u| and u are chosen to be at
         ! time level n. 
 
-        tend(k,iEdge) = tend(k,iEdge) - explicitBottomDragCoef * & 
-           sqrt(kineticEnergyCell(k,cell1) + kineticEnergyCell(k,cell2)) * normalVelocity(k,iEdge) / layerThicknessEdge(k,iEdge)
+        tend(k,iEdge) = tend(k,iEdge) - explicitBottomDragCoef * &
+                        sqrt(kineticEnergyCell(k,cell1) + kineticEnergyCell(k,cell2)) * &
+                        normalVelocity(k,iEdge) / layerThicknessEdge(k,iEdge)
 
       enddo
       !$omp end do

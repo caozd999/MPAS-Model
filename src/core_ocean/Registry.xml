@@ -847,6 +847,32 @@
 					possible_values="Real Values greater than zero less than bottomDepth"
 		/>
 	</nml_record>
+	<nml_record name="vegetation_drag" mode="init;forward">
+		<nml_option name="config_use_explicit_vegetation_drag" type="logical" default_value=".false." units="unitless"
+					description="Controls if vegetation drag is used."
+					possible_values=".true. or .false."
+		/>
+   <nml_option name="config_vegetation_manningN" type="real" default_value="0.07" units="s/m(1/3)"
+					description="Controls if tidal forcing is used."
+					possible_values=".true. or .false."
+		/>
+   <nml_option name="config_vegetation_biomass" type="real" default_value="0.0" units="g/m^2"
+			description="Vegetation biomass."
+			possible_values="Any positive real number greater than 0."
+		 />
+   <nml_option name="config_vegetation_density" type="real" default_value="0.0" units="1/m^2"
+			description="Stem density of vegetation per unit area."
+			possible_values="Any positive real number greater than 0."
+	  />
+   <nml_option name="config_vegetation_diameter" type="real" default_value="0.0" units="m"
+			description="stem diameter."
+			possible_values="Any positive real number greater than 0."
+		 />
+   <nml_option name="config_vegetation_height" type="real" default_value="0.0" units="m"
+			description="Stem height."
+			possible_values="Any positive real number greater than 0."
+	 	/>
+	 </nml_record>
 	<nml_record name="tidal_forcing" mode="init;forward">
 		<nml_option name="config_use_tidal_forcing" type="logical" default_value=".false." units="unitless"
 					description="Controls if tidal forcing is used."
@@ -1079,6 +1105,10 @@
 					description="If true, explicit bottom drag is used on the momentum equation."
 					possible_values=".true. or .false."
 		/>
+!		<nml_option name="config_use_explicit_vegetation_drag" type="logical" default_value=".false." units="unitless"
+!					description="If true, explicit vegetation drag is used on the momentum equation."
+!					possible_values=".true. or .false."
+!		/>
 		<nml_option name="config_explicit_bottom_drag_coeff" type="real" default_value="1.0e-3" units="unitless"
 					description="Dimensionless bottom drag coefficient, $c_{drag}$."
 					possible_values="any positive real, typically 1.0e-3"

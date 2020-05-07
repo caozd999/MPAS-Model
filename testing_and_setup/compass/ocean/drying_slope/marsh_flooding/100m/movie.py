@@ -21,10 +21,10 @@ from subprocess import call
 plt.switch_backend('agg')
 
 ds1 = xr.open_dataset('output1.nc')
-bath = ds1.bottomDepth.values.reshape((114,6))
+bath = ds1.bottomDepth.values.reshape((290,6))
 bot1 = bath[:,1]
 ds2 = xr.open_dataset('output2.nc')
-bath = ds2.bottomDepth.values.reshape((114,6))
+bath = ds2.bottomDepth.values.reshape((290,6))
 bot2 = bath[:,1]
 
 labels = ['Lmarsh=2.5km','Lmarsh=5.0km']
@@ -41,7 +41,7 @@ def setup_subplot(fileno):
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
 
-    x = np.linspace(0,25,114)
+    x = np.linspace(0,25,290)
     if (fileno=='1'):
       y = bot1
     else:
@@ -87,7 +87,7 @@ def plot_datasets(rval, times, fileno, plotdata=True, frame=False):
 
 
 def place_time_labels(times):
-    locs = [9.3, 7.2, 4.2, 2.2, 1.2, 0.2]
+    locs = [9.5, 7.2, 4.2, 2.2, 1.0, 0.15]
     for atime, ay in zip(times, locs):
         plt.text(25.2, ay, atime + ' days', size=8)
 
@@ -195,7 +195,7 @@ def main():
         lower_plot()
         timestr = plot_MPASO([atime], '2', 'k-', lw=2.0, label='Lmarsh=5.0km')
         #plt.text(10, 10, 't = ' + str(timestr)[10:])
-        plt.text(10, 10, 't = {:1.2f} hrs'.format(atime*24))
+        plt.text(9, 10, 't = {:1.2f} hrs'.format(atime*24))
 
         plt.suptitle('Drying slope comparison')
         

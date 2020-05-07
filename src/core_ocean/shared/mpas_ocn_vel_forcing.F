@@ -27,6 +27,7 @@ module ocn_vel_forcing
 
    use ocn_vel_forcing_surface_stress
    use ocn_vel_forcing_explicit_bottom_drag
+   use ocn_vel_forcing_explicit_vegetation_drag
 
    implicit none
    private
@@ -75,8 +76,8 @@ contains
 !
 !-----------------------------------------------------------------------
 
-   subroutine ocn_vel_forcing_tend(meshPool, normalVelocity, surfaceFluxAttenuationCoefficient, &
-                                   surfaceStress, kineticEnergyCell, layerThicknessEdge, tend, err)!{{{
+   subroutine ocn_vel_forcing_tend(meshPool, ssh, bottomDrag, normalVelocity, surfaceFluxAttenuationCoefficient, &
+                                   layerThickness, surfaceStress, kineticEnergyCell, layerThicknessEdge, tend, err)!{{{
 
       !-----------------------------------------------------------------
       !
@@ -86,18 +87,18 @@ contains
 
       real (kind=RKIND), dimension(:,:), intent(in) :: &
          normalVelocity, &    !< Input: Normal velocity at edges
-         kineticEnergyCell        !< Input: kinetic energy at cell
+         kineticEnergyCell    !< Input: kinetic energy at cell
 
+      real (kind=RKIND), dimension(:), intent(in) :: ssh, bottomDrag
       real (kind=RKIND), dimension(:), intent(in) :: &
          surfaceFluxAttenuationCoefficient, & !< Input: attenuation coefficient for surface fluxes at cell centers
          surfaceStress     !< Input: surface stress at edges
 
       real (kind=RKIND), dimension(:,:), intent(in) :: &
-         layerThicknessEdge     !< Input: thickness at edge
+         layerThickness       !< Input: layer thickness at cell
 
       type (mpas_pool_type), intent(in) :: &
-         meshPool          !< Input: mesh information
-
+         meshPool           !< Input: mesh information
       !-----------------------------------------------------------------
       !
       ! input/output variables
@@ -105,6 +106,7 @@ contains
       !-----------------------------------------------------------------
 
       real (kind=RKIND), dimension(:,:), intent(inout) :: &
+         layerThicknessEdge,     &!< Input: thickness at edge
          tend          !< Input/Output: velocity tendency
 
       !-----------------------------------------------------------------
@@ -142,6 +144,11 @@ contains
 
       err = ior(err, err1)
 
+      call ocn_vel_forcing_explicit_vegetation_drag_tend(meshPool, ssh, bottomDrag, &
+              normalVelocity, layerThickness, kineticEnergyCell, layerThicknessEdge, tend, err1)
+
+      err = ior(err, err1)
+
    !--------------------------------------------------------------------
 
    end subroutine ocn_vel_forcing_tend!}}}
@@ -174,11 +181,14 @@ contains
       integer, intent(out) :: err !< Output: error flag
 
       integer :: err1, err2
+      integer :: err3
 
       call ocn_vel_forcing_surface_stress_init(err1)
       call ocn_vel_forcing_explicit_bottom_drag_init(err2)
+      call ocn_vel_forcing_explicit_vegetation_drag_init(err3)
 
       err = ior(err1, err2)
+      err = ior(err, err3)
 
    !--------------------------------------------------------------------
 

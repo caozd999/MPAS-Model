@@ -12,8 +12,8 @@ import subprocess
 dev_null = open('/dev/null', 'w')
 
 # Run command is:
-# gpmetis graph.info 4
-subprocess.check_call(['gpmetis', 'graph.info', '4'])
+# gpmetis graph.info 32
+subprocess.check_call(['gpmetis', 'graph.info', '32'])
 print("\n")
 print("     *****************************")
 print("     ** Starting model run step **")
@@ -22,8 +22,8 @@ print("\n")
 os.environ['OMP_NUM_THREADS'] = '1'
 
 # Run command is:
-# mpirun -n 4 ./ocean_model -n namelist.ocean -s streams.ocean
-subprocess.check_call(['mpirun', '-n', '4', './ocean_model', '-n',
+# mpirun -n 32 ./ocean_model -n namelist.ocean -s streams.ocean
+subprocess.check_call(['mpirun', '-n', '32', './ocean_model', '-n',
                        'namelist.ocean', '-s', 'streams.ocean'])
 print("\n")
 print("     *****************************")

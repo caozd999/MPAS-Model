@@ -224,7 +224,8 @@ contains
       type (mpas_pool_type), pointer :: tracersPool
 
       real (kind=RKIND), dimension(:), pointer :: surfaceStress, surfaceStressMagnitude, surfaceFluxAttenuationCoefficient, ssh
-      real (kind=RKIND), dimension(:), pointer :: tidalPotentialEta 
+      real (kind=RKIND), dimension(:), pointer :: bottomDrag
+      real (kind=RKIND), dimension(:), pointer :: tidalPotentialEta
       real (kind=RKIND), dimension(:,:), pointer :: &
         layerThicknessEdge, normalVelocity, tangentialVelocity, density, potentialDensity, zMid, pressure, &
         layerThickness, &
@@ -297,6 +298,7 @@ contains
 
       call mpas_pool_get_array(forcingPool, 'surfaceStress', surfaceStress)
       call mpas_pool_get_array(forcingPool, 'surfaceStressMagnitude', surfaceStressMagnitude)
+      call mpas_pool_get_array(forcingPool, 'bottomDrag', bottomDrag)
 
       call mpas_pool_get_array(diagnosticsPool, 'wettingVelocity', wettingVelocity)
       !
@@ -393,8 +395,8 @@ contains
       !
       ! velocity tendency: forcing and bottom drag
       !
-      call ocn_vel_forcing_tend(meshPool, normalVelocity, surfaceFluxAttenuationCoefficient, &
-              surfaceStress, kineticEnergyCell, layerThicknessEdge, &
+      call ocn_vel_forcing_tend(meshPool, ssh, bottomDrag, normalVelocity, surfaceFluxAttenuationCoefficient, &
+              layerThickness, surfaceStress, kineticEnergyCell, layerThicknessEdge, &
                                 tend_normalVelocity, err)
 
       !
