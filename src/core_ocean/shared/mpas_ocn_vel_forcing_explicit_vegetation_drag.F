@@ -120,8 +120,6 @@ contains
 
       real(kind=RKIND), pointer :: config_idealized_profile_Cd, &
                                    config_idealized_profile_Cd_marsh, &
-                                   config_vegetation_manningN, &
-                                   config_vegetation_biomass, &
                                    config_vegetation_density, &
                                    config_vegetation_diameter, &
                                    config_vegetation_height
@@ -143,8 +141,6 @@ contains
 ! read in vegetation properties
       call mpas_pool_get_config(ocnConfigs, 'config_idealized_profile_Cd',config_idealized_profile_Cd)
       call mpas_pool_get_config(ocnConfigs, 'config_idealized_profile_Cd_marsh',config_idealized_profile_Cd_marsh)
-      call mpas_pool_get_config(ocnConfigs, 'config_vegetation_manningN',config_vegetation_manningN)
-      call mpas_pool_get_config(ocnConfigs, 'config_vegetation_biomass',config_vegetation_biomass)
       call mpas_pool_get_config(ocnConfigs, 'config_vegetation_diameter',config_vegetation_diameter)
       call mpas_pool_get_config(ocnConfigs, 'config_vegetation_height',config_vegetation_height)
       call mpas_pool_get_config(ocnConfigs, 'config_vegetation_density',config_vegetation_density)
@@ -176,9 +172,9 @@ contains
 
           ! Define bottom drag coefficient 
           ! cff1 for regular bottom drag; cff2 for vegetation bottom drag
-          cff1 = config_idealized_profile_Cd
-!          cff1 = gravity * config_idealized_profile_Cd**2.0_RKIND * &
-!            (0.5_RKIND * (ssh(cell1) + ssh(cell2) + bottomDepth(cell1) + bottomDepth(cell2)))**(-1.0_RKIND/3.0_RKIND)
+!          cff1 = config_idealized_profile_Cd
+          cff1 = gravity * config_idealized_profile_Cd**2.0_RKIND * &
+            (0.5_RKIND * (ssh(cell1) + ssh(cell2) + bottomDepth(cell1) + bottomDepth(cell2)))**(-1.0_RKIND/3.0_RKIND)
           cff2 = config_idealized_profile_Cd_marsh * config_vegetation_density * config_vegetation_diameter * &
                          layerThicknessEdge(N,iEdge) * R_veg(N) ! should we assume R_veg(N)=1?
 
@@ -201,7 +197,7 @@ contains
           ! Explicit bottom drag term:
           ! du/dt = ... - c |u| u / h
           ! appied to bottom layer only.
-          tend(N,iEdge) = tend(N,iEdge) - explicitCd* &
+          tend(N,iEdge) = tend(N,iEdge) - 0.5_RKIND*explicitCd* &
                           sqrt(kineticEnergyCell(N,cell1) + kineticEnergyCell(N,cell2)) * normalVelocity(N,iEdge)  &
                           / layerThicknessEdge(N,iEdge)
 
@@ -216,9 +212,10 @@ contains
                !               sqrt(kineticEnergyCell(k,cell1) + kineticEnergyCell(k,cell2)) * normalVelocity(k,iEdge)  &
                !                / layerThicknessEdge(k,iEdge)
                ! simplify the above commented equations to the bottom ones to get rid of layerThicknessEdge
-               Cd_veg = config_idealized_profile_Cd_marsh*config_vegetation_density * &
+               config_idealized_profile_Cd_marsh = 1.0_RKIND
+               Cd_veg = config_idealized_profile_Cd_marsh * config_vegetation_density * &
                         config_vegetation_diameter*R_veg(k)*mask_veg
-               tend(k,iEdge) = tend(k,iEdge) - Cd_veg* &
+               tend(k,iEdge) = tend(k,iEdge) -0.5_RKIND* Cd_veg* &
                            sqrt(kineticEnergyCell(k,cell1) + kineticEnergyCell(k,cell2)) * normalVelocity(k,iEdge)
              enddo
            endif
