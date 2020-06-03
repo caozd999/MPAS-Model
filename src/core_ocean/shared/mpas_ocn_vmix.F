@@ -320,7 +320,7 @@ contains
          ! Apply bottom drag boundary condition on the viscous term
          ! second line uses sqrt(2.0*kineticEnergyEdge(k,iEdge))
          B(N) = 1.0_RKIND - A(N) + dt*implicitBottomDragCoef &
-              * sqrt(kineticEnergyCell(k,cell1) + kineticEnergyCell(k,cell2)) / layerThicknessEdge(k,iEdge) &
+              * sqrt(kineticEnergyCell(N,cell1) + kineticEnergyCell(N,cell2)) / layerThicknessEdge(N,iEdge) &
               ! added Rayleigh terms
               + dt*(rayleighBottomDampingCoef + &
                     rayleighDampingCoef /((1.0_RKIND - rayleighDepthVariable) + rayleighDepthVariable*edgeThicknessTotal))
@@ -465,7 +465,7 @@ contains
          ! Apply bottom drag boundary condition on the viscous term
          ! second line uses sqrt(2.0*kineticEnergyEdge(k,iEdge))
          B(N) = 1.0_RKIND - A(N) + dt*implicitBottomDragCoef &
-              * sqrt(kineticEnergyCell(k,cell1) + kineticEnergyCell(k,cell2)) / layerThicknessEdge(k,iEdge)
+              * sqrt(kineticEnergyCell(N,cell1) + kineticEnergyCell(N,cell2)) / layerThicknessEdge(N,iEdge)
 
          call tridiagonal_solve(A(2:N),B,C(1:N-1),normalVelocity(:,iEdge),velTemp,N)
 
@@ -619,7 +619,7 @@ contains
          ! second line uses sqrt(2.0*kineticEnergyEdge(k,iEdge))
          ! use implicitCd from spatially variable bottom drag
          B(N) = 1.0_RKIND - A(N) + dt*implicitCd &
-              * sqrt(kineticEnergyCell(k,cell1) + kineticEnergyCell(k,cell2)) / layerThicknessEdge(k,iEdge)
+              * sqrt(kineticEnergyCell(N,cell1) + kineticEnergyCell(N,cell2)) / layerThicknessEdge(N,iEdge)
 
          call tridiagonal_solve(A(2:N),B,C(1:N-1),normalVelocity(:,iEdge),velTemp,N)
 
@@ -780,7 +780,7 @@ contains
          ! second line uses sqrt(2.0*kineticEnergyEdge(k,iEdge))
          ! use implicitCd from spatially variable bottom drag
          B(N) = 1.0_RKIND - A(N) + dt*implicitCd &
-              * sqrt(kineticEnergyCell(k,cell1) + kineticEnergyCell(k,cell2)) / layerThicknessEdge(k,iEdge)
+              * sqrt(kineticEnergyCell(N,cell1) + kineticEnergyCell(N,cell2)) / layerThicknessEdge(N,iEdge)
 
          call tridiagonal_solve(A(2:N),B,C(1:N-1),normalVelocity(:,iEdge),velTemp,N)
 
@@ -975,7 +975,6 @@ contains
       logical, pointer :: config_Rayleigh_friction, config_Rayleigh_bottom_friction, &
                           config_Rayleigh_damping_depth_variable
       logical, pointer :: config_use_implicit_bottom_drag_variable, config_use_implicit_bottom_drag_variable_mannings
-      logical, pointer :: config_use_explicit_vegetation_drag
 
       type (mpas_pool_iterator_type) :: groupItr
 
@@ -1011,8 +1010,6 @@ contains
                                              config_use_implicit_bottom_drag_variable)
       call mpas_pool_get_config(ocnConfigs, 'config_use_implicit_bottom_drag_variable_mannings', &
                                              config_use_implicit_bottom_drag_variable_mannings)
-      call mpas_pool_get_config(ocnConfigs, 'config_use_explicit_vegetation_drag', &
-                                             config_use_explicit_vegetation_drag)
       call mpas_pool_get_array(statePool, 'normalVelocity', normalVelocity, timeLevel)
       call mpas_pool_get_array(statePool, 'layerThickness', layerThickness, timeLevel)
       call mpas_pool_get_array(statePool, 'ssh', ssh, timeLevel)
@@ -1064,13 +1061,6 @@ contains
       !  Implicit vertical solve for momentum
       !
       call mpas_timer_start('vmix solve momentum', .false.)
-!      if (config_use_explicit_vegetation_drag) then
-!        config_Rayleigh_friction = .false.
-!        config_Rayleigh_bottom_friction = .false.
-!        config_Rayleigh_damping_depth_variable = .false.
-!        config_use_implicit_bottom_drag_variable = .false.
-!        config_use_implicit_bottom_drag_variable_mannings = .false.
-!      endif
       if (.not. (config_Rayleigh_friction .or. &
                  config_Rayleigh_bottom_friction .or. &
                  config_Rayleigh_damping_depth_variable .or. &
@@ -1185,7 +1175,6 @@ contains
       logical, pointer :: config_Rayleigh_friction, config_Rayleigh_bottom_friction, &
                           config_Rayleigh_damping_depth_variable
       real (kind=RKIND), pointer :: config_Rayleigh_damping_coeff, config_Rayleigh_bottom_damping_coeff
-      logical, pointer :: config_use_explicit_vegetation_drag
 
       err = 0
 
@@ -1203,8 +1192,6 @@ contains
                                              config_Rayleigh_damping_depth_variable)
       call mpas_pool_get_config(ocnConfigs, 'config_Rayleigh_bottom_damping_coeff', &
                                              config_Rayleigh_bottom_damping_coeff)
-      call mpas_pool_get_config(ocnConfigs, 'config_use_explicit_vegetation_drag', &
-                                             config_use_explicit_vegetation_drag)
 
       rayleighDampingCoef = 0.0_RKIND
 
@@ -1234,10 +1221,6 @@ contains
       if (config_use_implicit_bottom_drag) then
           implicitBottomDragCoef = config_implicit_bottom_drag_coeff
       endif
-
-!      if (config_use_explicit_vegetation_drag) then
-!          implicitBottomDragCoef = 0.0_RKIND
-!      endif
 
       call ocn_vmix_coefs_const_init(err_tmp)
       err = ior(err, err_tmp)

@@ -9,23 +9,23 @@
 # init namelists in the default_inputs directory after a successful build of
 # the ocean model.
 [namelists]
-forward = /lustre/scratch4/turquoise/zhendong/MPAS-Model/VarDrag/namelist.ocean
-init    = /lustre/scratch4/turquoise/zhendong/MPAS-Model/VarDrag/namelist.ocean
+forward = /lustre/scratch4/turquoise/zhendong/MPAS-Model/ExpVegDrag/namelist.ocean
+init    = /lustre/scratch4/turquoise/zhendong/MPAS-Model/ExpVegDrag/namelist.ocean
 
 # The streams section defines paths to template streams files that will be used
 # to generate specific streams files. Typically these will point to the forward and
 # init streams files in the default_inputs directory after a successful build of
 # the ocean model.
 [streams]
-forward = /lustre/scratch4/turquoise/zhendong/MPAS-Model/VarDrag/streams.ocean.forward
-init    = /lustre/scratch4/turquoise/zhendong/MPAS-Model/VarDrag/streams.ocean.init
+forward = /lustre/scratch4/turquoise/zhendong/MPAS-Model/ExpVegDrag/streams.ocean.forward
+init    = /lustre/scratch4/turquoise/zhendong/MPAS-Model/ExpVegDrag/streams.ocean.init
 
 # The executables section defines paths to required executables. These
 # executables are provided for use by specific test cases.
 # Full paths should be provided in order to access the executables from
 # anywhere on the machine.
 [executables]
-model = /lustre/scratch4/turquoise/zhendong/MPAS-Model/VarDrag/ocean_model
+model = /lustre/scratch4/turquoise/zhendong/MPAS-Model/ExpVegDrag/ocean_model
 
 # The paths section describes paths that are used within the ocean core test
 # cases.

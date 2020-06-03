@@ -18,7 +18,7 @@
 		<option name="config_drying_min_cell_height">1.0e-3</option>
 		<option name="config_verify_not_dry">.true.</option>
 		<option name="config_zero_drying_velocity">.true.</option>
-		<option name="config_thickness_flux_type">'upwind'</option>
+		<option name="config_thickness_flux_type">'centered'</option>
 		<option name="config_time_integrator">'RK4'</option>
 		<option name="config_run_duration">'0002_00:00:01'</option>
 		<option name="config_use_mom_del2">.false.</option>

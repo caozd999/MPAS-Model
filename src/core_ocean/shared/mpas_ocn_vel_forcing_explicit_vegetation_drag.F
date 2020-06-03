@@ -172,9 +172,9 @@ contains
 
           ! Define bottom drag coefficient 
           ! cff1 for regular bottom drag; cff2 for vegetation bottom drag
-!          cff1 = config_idealized_profile_Cd
-          cff1 = gravity * config_idealized_profile_Cd**2.0_RKIND * &
-            (0.5_RKIND * (ssh(cell1) + ssh(cell2) + bottomDepth(cell1) + bottomDepth(cell2)))**(-1.0_RKIND/3.0_RKIND)
+          cff1 = config_idealized_profile_Cd
+!          cff1 = gravity * config_idealized_profile_Cd**2.0_RKIND * &
+!            (0.5_RKIND * (ssh(cell1) + ssh(cell2) + bottomDepth(cell1) + bottomDepth(cell2)))**(-1.0_RKIND/3.0_RKIND)
           cff2 = config_idealized_profile_Cd_marsh * config_vegetation_density * config_vegetation_diameter * &
                          layerThicknessEdge(N,iEdge) * R_veg(N) ! should we assume R_veg(N)=1?
 
@@ -212,7 +212,6 @@ contains
                !               sqrt(kineticEnergyCell(k,cell1) + kineticEnergyCell(k,cell2)) * normalVelocity(k,iEdge)  &
                !                / layerThicknessEdge(k,iEdge)
                ! simplify the above commented equations to the bottom ones to get rid of layerThicknessEdge
-               config_idealized_profile_Cd_marsh = 1.0_RKIND
                Cd_veg = config_idealized_profile_Cd_marsh * config_vegetation_density * &
                         config_vegetation_diameter*R_veg(k)*mask_veg
                tend(k,iEdge) = tend(k,iEdge) -0.5_RKIND* Cd_veg* &
