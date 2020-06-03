@@ -848,10 +848,6 @@
 		/>
 	</nml_record>
 	<nml_record name="vegetation_drag" mode="init;forward">
-		<nml_option name="config_use_implicit_vegetation_drag" type="logical" default_value=".false." units="unitless"
-					description="Controls if implicit vegetation drag is used."
-					possible_values=".true. or .false."
-		/>
 		<nml_option name="config_use_explicit_vegetation_drag" type="logical" default_value=".false." units="unitless"
 					description="Controls if explicit vegetation drag is used."
 					possible_values=".true. or .false."
