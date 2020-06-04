@@ -280,7 +280,6 @@ contains
         end do
       end if
 
-      !! zhendong@2020-03-03
       if (config_idealized_profile) then
         call mpas_pool_get_array(forcingPool, 'bottomDrag', bottomDrag)
         config_idealized_profile_Lmarsh = 1.0_RKIND - config_idealized_profile_Lcoast &
@@ -408,7 +407,7 @@ contains
       if (config_use_wetting_drying .and. config_tidal_start_dry) then
         do iCell = 1, nCellsSolve
           ssh(iCell) = -bottomDepth(iCell) + config_drying_min_cell_height*maxLevelCell(iCell)
-          ssh(iCell) = MAX(ssh(iCell),-config_tidal_forcing_monochromatic_baseline) !Zhendong Mar-06-2020
+          ssh(iCell) = MAX(ssh(iCell),-config_tidal_forcing_monochromatic_baseline)
           ! also computes zMid
           do k = 1, maxLevelCell(iCell)
             layerThickness(k,iCell) = (ssh(iCell) + bottomDepth(iCell))/maxLevelCell(iCell)
@@ -435,8 +434,7 @@ contains
       ! Set tidal boundary mask
       do iCell = 1, nCellsSolve
         tidalInputMask(iCell) = 0.0_RKIND
-       ! if (yCell(iCell) > (25.0e3 - dcEdgeMinGlobal/2.0_RKIND)) then
-        if (yCell(iCell) > (yMax - dcEdgeMinGlobal/2.0_RKIND)) then ! Zhendong March-05-2020
+        if (yCell(iCell) > (yMax - dcEdgeMinGlobal/2.0_RKIND)) then
           tidalInputMask(iCell) = 1.0_RKIND
         ! spread it over multiple cells
         !if (yCell(iCell) > (25.0e3 - 3*dcEdgeMinGlobal)) then
